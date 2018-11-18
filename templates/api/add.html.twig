@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello{% endblock %}
+
+{% block body %}
+
+
+<div class="example-wrapper">
+    <form method="post" action="{{ path("generate")}}">
+        {{ form_widget(form) }}
+        <input type="submit" value="Сгенерировать" />
+    </form>
+</div>
+{% endblock %}

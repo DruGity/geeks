@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Code;
 use App\Repository\CodeRepository;
+use App\Services\CodeGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Config\Definition\Exception\Exception;
@@ -14,16 +15,20 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ApiController extends AbstractController
 {
-    /** @var EntityManagerInterface  */
+    /** @var EntityManagerInterface */
     private $em;
 
     /** @var  CodeRepository */
     private $codeRepository;
 
-    public function __construct(EntityManagerInterface $em, CodeRepository $codeRepository)
+    /** @var  CodeGenerator */
+    private $generator;
+
+    public function __construct(EntityManagerInterface $em, CodeRepository $codeRepository, CodeGenerator $generator)
     {
         $this->em = $em;
         $this->codeRepository = $codeRepository;
+        $this->generator = $generator;
     }
 
     /**
@@ -34,9 +39,23 @@ class ApiController extends AbstractController
         $data = $request->getContent();
         $nb = $request->request->get('nb');
         $export = $request->request->get('export');
-        var_dump($export);
 
-        return new Response('okasasd');
+        for ($i = 0; $i < $nb; $i++) {
+            $codeEntity = new Code();
+            $code = $this->generator->generate();
+            $codeEntity->setCode($code);
+            $this->em->persist($codeEntity);
+            $this->em->flush();
+            $codes[] = $code;
+        }
+
+        var_dump($export);
+        echo '<br>';
+        var_dump($nb);
+        echo '<br>';
+        var_dump($codes);
+
+        return new Response('');
     }
 
     /**
@@ -49,8 +68,16 @@ class ApiController extends AbstractController
             /** @var Code $code */
             $code = $this->codeRepository->findOneBy(['code' => $code]);
 
-            if($code) {
-                return new JsonResponse($code);
+            if ($code) {
+
+                $json = [
+                    'id' => $code->getId(),
+                    'code' => $code->getCode(),
+                    'date' => $code->getDate()
+                ];
+
+                return new JsonResponse(json_encode($json));
+
             } else {
                 return new Response('Code not found', 404, array('Content-Type' => 'text/html'));
             }
@@ -59,4 +86,5 @@ class ApiController extends AbstractController
         }
 
     }
+
 }

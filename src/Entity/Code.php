@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints\DateTime;
+use Symfony\Component\Validator\Constraint;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\CodeRepository")
@@ -27,6 +28,11 @@ class Code
      */
     private $date;
 
+    public function __construct()
+    {
+        $this->date = new \DateTime('now', new \DateTimeZone("UTC"));
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -49,9 +55,9 @@ class Code
         return $this->date;
     }
 
-    public function setDate(\DateTimeInterface $date = null): self
+    public function setDate(\DateTimeInterface $date): self
     {
-        $this->date = new \DateTime('now', new \DateTimeZone("UTC"));
+        $this->date = $date;
 
         return $this;
     }
