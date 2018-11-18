@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Code;
 use App\Repository\CodeRepository;
 use App\Services\CodeGenerator;
+use App\Services\ExcelExport;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Config\Definition\Exception\Exception;
@@ -24,11 +25,19 @@ class ApiController extends AbstractController
     /** @var  CodeGenerator */
     private $generator;
 
-    public function __construct(EntityManagerInterface $em, CodeRepository $codeRepository, CodeGenerator $generator)
-    {
+    /** @var  ExcelExport */
+    private $excel;
+
+    public function __construct(
+        EntityManagerInterface $em,
+        CodeRepository $codeRepository,
+        CodeGenerator $generator,
+        ExcelExport $excel
+    ){
         $this->em = $em;
         $this->codeRepository = $codeRepository;
         $this->generator = $generator;
+        $this->excel = $excel;
     }
 
     /**
@@ -36,8 +45,7 @@ class ApiController extends AbstractController
      */
     public function generateAction(Request $request)
     {
-        $data = $request->getContent();
-        $nb = $request->request->get('nb');
+        $nb = $request->request->get('nb') !== null ? $request->request->get('nb') : 1;
         $export = $request->request->get('export');
 
         for ($i = 0; $i < $nb; $i++) {
@@ -45,17 +53,22 @@ class ApiController extends AbstractController
             $code = $this->generator->generate();
             $codeEntity->setCode($code);
             $this->em->persist($codeEntity);
-            $this->em->flush();
+
+            if (($i % 50) === 0) { // на случай если кодов будет много
+                $this->em->flush();
+                $this->em->clear();
+            }
+
             $codes[] = $code;
         }
 
-        var_dump($export);
-        echo '<br>';
-        var_dump($nb);
-        echo '<br>';
-        var_dump($codes);
+        $this->em->flush();
+        $this->em->clear();
 
-        return new Response('');
+        if(!empty($codes) && $export == 'xls') {
+            $this->excel->export($codes);
+        }
+        return new Response(sprintf('%s code(s) are generated!',count($codes)));
     }
 
     /**

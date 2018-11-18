@@ -10,6 +10,7 @@ class CodeGenerator
     const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
     const NUMBERS = [2, 3, 4, 6, 7, 8, 9];
 
+    /** @var CodeRepository  */
     private $codeRepository;
 
     public function __construct(CodeRepository $codeRepository)

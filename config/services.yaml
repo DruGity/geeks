@@ -30,5 +30,8 @@ services:
     api.generate_code:
         class: App\Services\CodeGenerator
 
+    api.excel_export:
+        class: App\Services\ExcelExport
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
