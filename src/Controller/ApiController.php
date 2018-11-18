@@ -41,6 +41,7 @@ class ApiController extends AbstractController
     }
 
     /**
+     * @return Response
      * @Route("/generate", name="generate", methods={"POST"})
      */
     public function generateAction(Request $request)
@@ -89,7 +90,7 @@ class ApiController extends AbstractController
                     'date' => $code->getDate()
                 ];
 
-                return new JsonResponse(json_encode($json));
+                return new JsonResponse($json);
 
             } else {
                 return new Response('Code not found', 404, array('Content-Type' => 'text/html'));
